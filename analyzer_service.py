@@ -25,7 +25,7 @@ from src.core.market_review import run_market_review
 
 def analyze_stock(
     stock_code: str,
-    config: Config = None,
+    config: Optional[Config] = None,
     full_report: bool = False,
     notifier: Optional[NotificationService] = None
 ) -> Optional[AnalysisResult]:
@@ -70,7 +70,7 @@ def analyze_stock(
 
 def analyze_stocks(
     stock_codes: List[str],
-    config: Config = None,
+    config: Optional[Config] = None,
     full_report: bool = False,
     notifier: Optional[NotificationService] = None
 ) -> List[AnalysisResult]:
@@ -98,7 +98,7 @@ def analyze_stocks(
     return results
 
 def perform_market_review(
-    config: Config = None,
+    config: Optional[Config] = None,
     notifier: Optional[NotificationService] = None
 ) -> Optional[str]:
     """

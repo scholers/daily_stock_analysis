@@ -1,3 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daily-stock-analysis"
+version = "0.0.0"
+requires-python = ">=3.10"
+description = "A/HK/US stock analysis (metadata for tooling; install deps via requirements.txt)"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "bot*", "data_provider*", "patch*", "src*"]
+
 [tool.black]
 line-length = 120
 target-version = ['py310', 'py311', 'py312']
