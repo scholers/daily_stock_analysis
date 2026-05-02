@@ -141,6 +141,10 @@ export interface TestLLMChannelResponse {
   success: boolean;
   message: string;
   error?: string | null;
+  errorCode?: string | null;
+  stage?: string | null;
+  retryable?: boolean | null;
+  details?: Record<string, unknown>;
   resolvedProtocol?: string | null;
   resolvedModel?: string | null;
   latencyMs?: number | null;
@@ -159,6 +163,10 @@ export interface DiscoverLLMChannelModelsResponse {
   success: boolean;
   message: string;
   error?: string | null;
+  errorCode?: string | null;
+  stage?: string | null;
+  retryable?: boolean | null;
+  details?: Record<string, unknown>;
   resolvedProtocol?: string | null;
   models: string[];
   latencyMs?: number | null;

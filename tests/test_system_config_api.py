@@ -63,6 +63,30 @@ class SystemConfigApiTestCase(unittest.TestCase):
         self.assertEqual(item_map["GEMINI_API_KEY"]["value"], "secret-key-value")
         self.assertFalse(item_map["GEMINI_API_KEY"]["is_masked"])
 
+    def test_get_setup_status_returns_readiness_payload(self) -> None:
+        self.env_path.write_text(
+            "\n".join(
+                [
+                    "LITELLM_MODEL=gemini/gemini-3-flash-preview",
+                    "GEMINI_API_KEY=secret-key-value",
+                    "STOCK_LIST=600519",
+                    "ADMIN_AUTH_ENABLED=false",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        with patch.dict(os.environ, {}, clear=True):
+            payload = system_config.get_setup_status(service=self.service).model_dump()
+
+        self.assertTrue(payload["is_complete"])
+        self.assertTrue(payload["ready_for_smoke"])
+        self.assertEqual(payload["required_missing_keys"], [])
+        check_map = {check["key"]: check for check in payload["checks"]}
+        self.assertEqual(check_map["llm_primary"]["status"], "configured")
+        self.assertEqual(check_map["llm_agent"]["status"], "inherited")
+
     def test_put_config_updates_secret_and_plain_field(self) -> None:
         current = system_config.get_system_config(include_schema=False, service=self.service).model_dump()
         payload = system_config.update_system_config(
@@ -270,6 +294,10 @@ class SystemConfigApiTestCase(unittest.TestCase):
                 "success": True,
                 "message": "LLM channel test succeeded",
                 "error": None,
+                "error_code": None,
+                "stage": "chat_completion",
+                "retryable": False,
+                "details": {},
                 "resolved_protocol": "openai",
                 "resolved_model": "openai/gpt-4o-mini",
                 "latency_ms": 123,
@@ -288,6 +316,7 @@ class SystemConfigApiTestCase(unittest.TestCase):
 
         self.assertTrue(payload["success"])
         self.assertEqual(payload["resolved_model"], "openai/gpt-4o-mini")
+        self.assertEqual(payload["stage"], "chat_completion")
         mock_test.assert_called_once()
 
     def test_validate_returns_user_facing_model_message_without_internal_env_key_name(self) -> None:
@@ -315,6 +344,10 @@ class SystemConfigApiTestCase(unittest.TestCase):
                 "success": True,
                 "message": "LLM channel model discovery succeeded",
                 "error": None,
+                "error_code": None,
+                "stage": "model_discovery",
+                "retryable": False,
+                "details": {"model_count": 2},
                 "resolved_protocol": "openai",
                 "models": ["qwen-plus", "qwen-turbo"],
                 "latency_ms": 88,
@@ -332,6 +365,7 @@ class SystemConfigApiTestCase(unittest.TestCase):
 
         self.assertTrue(payload["success"])
         self.assertEqual(payload["models"], ["qwen-plus", "qwen-turbo"])
+        self.assertEqual(payload["stage"], "model_discovery")
         mock_discover.assert_called_once()
 
 

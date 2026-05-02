@@ -71,6 +71,28 @@ class SystemConfigResponse(BaseModel):
     updated_at: Optional[str] = None
 
 
+class SetupStatusCheck(BaseModel):
+    """One first-run setup readiness check."""
+
+    key: str
+    title: str
+    category: Literal["base", "ai_model", "agent", "notification", "system"]
+    required: bool
+    status: Literal["configured", "inherited", "optional", "needs_action"]
+    message: str
+    next_step: Optional[str] = None
+
+
+class SetupStatusResponse(BaseModel):
+    """Read-only first-run setup status."""
+
+    is_complete: bool
+    ready_for_smoke: bool
+    required_missing_keys: List[str] = Field(default_factory=list)
+    next_step_key: Optional[str] = None
+    checks: List[SetupStatusCheck] = Field(default_factory=list)
+
+
 class ExportSystemConfigResponse(BaseModel):
     """Desktop-only export payload for raw `.env` backups."""
 
@@ -157,6 +179,10 @@ class TestLLMChannelResponse(BaseModel):
     success: bool
     message: str
     error: Optional[str] = None
+    error_code: Optional[str] = None
+    stage: Optional[str] = None
+    retryable: Optional[bool] = None
+    details: Dict[str, Any] = Field(default_factory=dict)
     resolved_protocol: Optional[str] = None
     resolved_model: Optional[str] = None
     latency_ms: Optional[int] = None
@@ -179,6 +205,10 @@ class DiscoverLLMChannelModelsResponse(BaseModel):
     success: bool
     message: str
     error: Optional[str] = None
+    error_code: Optional[str] = None
+    stage: Optional[str] = None
+    retryable: Optional[bool] = None
+    details: Dict[str, Any] = Field(default_factory=dict)
     resolved_protocol: Optional[str] = None
     models: List[str] = Field(default_factory=list)
     latency_ms: Optional[int] = None

@@ -18,6 +18,7 @@ from api.v1.schemas.system_config import (
     SystemConfigConflictResponse,
     SystemConfigResponse,
     SystemConfigSchemaResponse,
+    SetupStatusResponse,
     SystemConfigValidationErrorResponse,
     TestLLMChannelRequest,
     TestLLMChannelResponse,
@@ -76,6 +77,35 @@ def get_system_config(
             detail={
                 "error": "internal_error",
                 "message": "Failed to load system configuration",
+            },
+        )
+
+
+@router.get(
+    "/config/setup/status",
+    response_model=SetupStatusResponse,
+    responses={
+        200: {"description": "Setup status loaded"},
+        401: {"description": "Unauthorized", "model": ErrorResponse},
+        500: {"description": "Internal server error", "model": ErrorResponse},
+    },
+    summary="Get first-run setup status",
+    description="Read a side-effect-free setup readiness summary from saved and runtime configuration.",
+)
+def get_setup_status(
+    service: SystemConfigService = Depends(get_system_config_service),
+) -> SetupStatusResponse:
+    """Return first-run setup status without writing config or reloading runtime state."""
+    try:
+        payload = service.get_setup_status()
+        return SetupStatusResponse.model_validate(payload)
+    except Exception as exc:
+        logger.error("Failed to load setup status: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "internal_error",
+                "message": "Failed to load setup status",
             },
         )
 
